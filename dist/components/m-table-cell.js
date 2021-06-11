@@ -219,6 +219,12 @@ var MTableCell = /*#__PURE__*/ (function (_React$Component) {
 
   (0, _createClass2["default"])(MTableCell, [
     {
+      key: "shouldComponentUpdate",
+      value: function shouldComponentUpdate(prev, next) {
+        return false;
+      },
+    },
+    {
       key: "getRenderValue",
       value: function getRenderValue() {
         var dateLocale =
