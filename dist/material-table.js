@@ -71,8 +71,6 @@ var React = _interopRequireWildcard(require("react"));
 
 var _components = require("./components");
 
-var _reactBeautifulDnd = require("react-beautiful-dnd");
-
 var _dataManager = _interopRequireDefault(require("./utils/data-manager"));
 
 var _debounce = require("debounce");
@@ -300,28 +298,6 @@ var MaterialTable = /*#__PURE__*/ (function (_React$Component) {
               _this.props.onChangeRowsPerPage(pageSize);
           });
         }
-      }
-    );
-    (0, _defineProperty2["default"])(
-      (0, _assertThisInitialized2["default"])(_this),
-      "onDragEnd",
-      function (result) {
-        if (!result || !result.source || !result.destination) return;
-
-        _this.dataManager.changeByDrag(result);
-
-        _this.setState(_this.dataManager.getRenderState(), function () {
-          if (
-            _this.props.onColumnDragged &&
-            result.destination.droppableId === "headers" &&
-            result.source.droppableId === "headers"
-          ) {
-            _this.props.onColumnDragged(
-              result.source.index,
-              result.destination.index
-            );
-          }
-        });
       }
     );
     (0, _defineProperty2["default"])(
@@ -1432,273 +1408,245 @@ var MaterialTable = /*#__PURE__*/ (function (_React$Component) {
     {
       key: "render",
       value: function render() {
-        var _this4 = this;
-
         var props = this.getProps();
+        var table = this.renderTable(props);
         return /*#__PURE__*/ React.createElement(
-          _reactBeautifulDnd.DragDropContext,
+          props.components.Container,
           {
-            onDragEnd: this.onDragEnd,
-            nonce: props.options.cspNonce,
-          },
-          /*#__PURE__*/ React.createElement(
-            props.components.Container,
-            {
-              style: (0, _objectSpread2["default"])(
-                {
-                  position: "relative",
-                },
-                props.style
-              ),
-            },
-            props.options.paginationPosition === "top" ||
-              props.options.paginationPosition === "both"
-              ? this.renderFooter()
-              : null,
-            props.options.toolbar &&
-              /*#__PURE__*/ React.createElement(props.components.Toolbar, {
-                actions: props.actions,
-                components: props.components,
-                selectedRows:
-                  this.state.selectedCount > 0
-                    ? this.state.originalData.filter(function (a) {
-                        return a.tableData.checked;
-                      })
-                    : [],
-                columns: this.state.columns,
-                columnsButton: props.options.columnsButton,
-                icons: props.icons,
-                exportAllData: props.options.exportAllData,
-                exportButton: props.options.exportButton,
-                exportDelimiter: props.options.exportDelimiter,
-                exportFileName: props.options.exportFileName,
-                exportCsv: props.options.exportCsv,
-                exportPdf: props.options.exportPdf,
-                getFieldValue: this.dataManager.getFieldValue,
-                data: this.state.data,
-                renderData: this.state.renderData,
-                search: props.options.search,
-                showTitle: props.options.showTitle,
-                showTextRowsSelected: props.options.showTextRowsSelected,
-                toolbarButtonAlignment: props.options.toolbarButtonAlignment,
-                searchFieldAlignment: props.options.searchFieldAlignment,
-                searchAutoFocus: props.options.searchAutoFocus,
-                searchFieldStyle: props.options.searchFieldStyle,
-                searchFieldVariant: props.options.searchFieldVariant,
-                title: props.title,
-                searchText: this.dataManager.searchText,
-                onSearchChanged: this.onSearchChangeDebounce,
-                dataManager: this.dataManager,
-                onColumnsChanged: this.onChangeColumnHidden,
-                localization: (0, _objectSpread2["default"])(
-                  {},
-                  MaterialTable.defaultProps.localization.toolbar,
-                  this.props.localization.toolbar
-                ),
-              }),
-            props.options.grouping &&
-              /*#__PURE__*/ React.createElement(props.components.Groupbar, {
-                icons: props.icons,
-                localization: (0, _objectSpread2["default"])(
-                  {},
-                  MaterialTable.defaultProps.localization.grouping,
-                  props.localization.grouping
-                ),
-                groupColumns: this.state.columns
-                  .filter(function (col) {
-                    return col.tableData.groupOrder > -1;
-                  })
-                  .sort(function (col1, col2) {
-                    return (
-                      col1.tableData.groupOrder - col2.tableData.groupOrder
-                    );
-                  }),
-                onSortChanged: this.onChangeGroupOrder,
-                onGroupRemoved: this.onGroupRemoved,
-              }),
-            /*#__PURE__*/ React.createElement(
-              ScrollBar,
+            style: (0, _objectSpread2["default"])(
               {
-                double: props.options.doubleHorizontalScroll,
+                position: "relative",
               },
+              props.style
+            ),
+          },
+          props.options.paginationPosition === "top" ||
+            props.options.paginationPosition === "both"
+            ? this.renderFooter()
+            : null,
+          props.options.toolbar &&
+            /*#__PURE__*/ React.createElement(props.components.Toolbar, {
+              actions: props.actions,
+              components: props.components,
+              selectedRows:
+                this.state.selectedCount > 0
+                  ? this.state.originalData.filter(function (a) {
+                      return a.tableData.checked;
+                    })
+                  : [],
+              columns: this.state.columns,
+              columnsButton: props.options.columnsButton,
+              icons: props.icons,
+              exportAllData: props.options.exportAllData,
+              exportButton: props.options.exportButton,
+              exportDelimiter: props.options.exportDelimiter,
+              exportFileName: props.options.exportFileName,
+              exportCsv: props.options.exportCsv,
+              exportPdf: props.options.exportPdf,
+              getFieldValue: this.dataManager.getFieldValue,
+              data: this.state.data,
+              renderData: this.state.renderData,
+              search: props.options.search,
+              showTitle: props.options.showTitle,
+              showTextRowsSelected: props.options.showTextRowsSelected,
+              toolbarButtonAlignment: props.options.toolbarButtonAlignment,
+              searchFieldAlignment: props.options.searchFieldAlignment,
+              searchAutoFocus: props.options.searchAutoFocus,
+              searchFieldStyle: props.options.searchFieldStyle,
+              searchFieldVariant: props.options.searchFieldVariant,
+              title: props.title,
+              searchText: this.dataManager.searchText,
+              onSearchChanged: this.onSearchChangeDebounce,
+              dataManager: this.dataManager,
+              onColumnsChanged: this.onChangeColumnHidden,
+              localization: (0, _objectSpread2["default"])(
+                {},
+                MaterialTable.defaultProps.localization.toolbar,
+                this.props.localization.toolbar
+              ),
+            }),
+          props.options.grouping &&
+            /*#__PURE__*/ React.createElement(props.components.Groupbar, {
+              icons: props.icons,
+              localization: (0, _objectSpread2["default"])(
+                {},
+                MaterialTable.defaultProps.localization.grouping,
+                props.localization.grouping
+              ),
+              groupColumns: this.state.columns
+                .filter(function (col) {
+                  return col.tableData.groupOrder > -1;
+                })
+                .sort(function (col1, col2) {
+                  return col1.tableData.groupOrder - col2.tableData.groupOrder;
+                }),
+              onSortChanged: this.onChangeGroupOrder,
+              onGroupRemoved: this.onGroupRemoved,
+            }),
+          /*#__PURE__*/ React.createElement(
+            ScrollBar,
+            {
+              double: props.options.doubleHorizontalScroll,
+            },
+            /*#__PURE__*/ React.createElement(
+              "div",
+              null,
               /*#__PURE__*/ React.createElement(
-                _reactBeautifulDnd.Droppable,
+                "div",
                 {
-                  droppableId: "headers",
-                  direction: "horizontal",
+                  ref: this.tableContainerDiv,
+                  style: {
+                    maxHeight: props.options.maxBodyHeight,
+                    minHeight: props.options.minBodyHeight,
+                    overflowY: props.options.overflowY,
+                  },
                 },
-                function (provided, snapshot) {
-                  var table = _this4.renderTable(props);
-
-                  return /*#__PURE__*/ React.createElement(
-                    "div",
-                    {
-                      ref: provided.innerRef,
-                    },
-                    /*#__PURE__*/ React.createElement(
+                this.state.width &&
+                  props.options.fixedColumns &&
+                  props.options.fixedColumns.right
+                  ? /*#__PURE__*/ React.createElement(
                       "div",
                       {
-                        ref: _this4.tableContainerDiv,
                         style: {
-                          maxHeight: props.options.maxBodyHeight,
-                          minHeight: props.options.minBodyHeight,
-                          overflowY: props.options.overflowY,
+                          width: this.getColumnsWidth(
+                            props,
+                            -1 * props.options.fixedColumns.right
+                          ),
+                          position: "absolute",
+                          top: 0,
+                          right: 0,
+                          boxShadow: "-2px 0px 15px rgba(125,147,178,.25)",
+                          overflowX: "hidden",
+                          zIndex: 11,
                         },
                       },
-                      _this4.state.width &&
-                        props.options.fixedColumns &&
-                        props.options.fixedColumns.right
-                        ? /*#__PURE__*/ React.createElement(
-                            "div",
-                            {
-                              style: {
-                                width: _this4.getColumnsWidth(
-                                  props,
-                                  -1 * props.options.fixedColumns.right
-                                ),
-                                position: "absolute",
-                                top: 0,
-                                right: 0,
-                                boxShadow:
-                                  "-2px 0px 15px rgba(125,147,178,.25)",
-                                overflowX: "hidden",
-                                zIndex: 11,
-                              },
-                            },
-                            /*#__PURE__*/ React.createElement(
-                              "div",
-                              {
-                                style: {
-                                  width: _this4.state.width,
-                                  background: "white",
-                                  transform: "translateX(calc(".concat(
-                                    _this4.getColumnsWidth(
-                                      props,
-                                      -1 * props.options.fixedColumns.right
-                                    ),
-                                    " - 100%))"
-                                  ),
-                                },
-                              },
-                              table
-                            )
-                          )
-                        : null,
-                      /*#__PURE__*/ React.createElement("div", null, table),
-                      _this4.state.width &&
-                        props.options.fixedColumns &&
-                        props.options.fixedColumns.left
-                        ? /*#__PURE__*/ React.createElement(
-                            "div",
-                            {
-                              style: {
-                                width: _this4.getColumnsWidth(
-                                  props,
-                                  props.options.fixedColumns.left
-                                ),
-                                position: "absolute",
-                                top: 0,
-                                left: 0,
-                                boxShadow: "2px 0px 15px rgba(125,147,178,.25)",
-                                overflowX: "hidden",
-                                zIndex: 11,
-                              },
-                            },
-                            /*#__PURE__*/ React.createElement(
-                              "div",
-                              {
-                                style: {
-                                  width: _this4.state.width,
-                                  background: "white",
-                                },
-                              },
-                              table
-                            )
-                          )
-                        : null
-                    ),
-                    provided.placeholder
-                  );
+                      /*#__PURE__*/ React.createElement(
+                        "div",
+                        {
+                          style: {
+                            width: this.state.width,
+                            background: "white",
+                            transform: "translateX(calc(".concat(
+                              this.getColumnsWidth(
+                                props,
+                                -1 * props.options.fixedColumns.right
+                              ),
+                              " - 100%))"
+                            ),
+                          },
+                        },
+                        table
+                      )
+                    )
+                  : null,
+                /*#__PURE__*/ React.createElement("div", null, table),
+                this.state.width &&
+                  props.options.fixedColumns &&
+                  props.options.fixedColumns.left
+                  ? /*#__PURE__*/ React.createElement(
+                      "div",
+                      {
+                        style: {
+                          width: this.getColumnsWidth(
+                            props,
+                            props.options.fixedColumns.left
+                          ),
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          boxShadow: "2px 0px 15px rgba(125,147,178,.25)",
+                          overflowX: "hidden",
+                          zIndex: 11,
+                        },
+                      },
+                      /*#__PURE__*/ React.createElement(
+                        "div",
+                        {
+                          style: {
+                            width: this.state.width,
+                            background: "white",
+                          },
+                        },
+                        table
+                      )
+                    )
+                  : null
+              )
+            )
+          ),
+          (this.state.isLoading || props.isLoading) &&
+            props.options.loadingType === "linear" &&
+            /*#__PURE__*/ React.createElement(
+              "div",
+              {
+                style: {
+                  position: "relative",
+                  width: "100%",
+                },
+              },
+              /*#__PURE__*/ React.createElement(
+                "div",
+                {
+                  style: {
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    height: "100%",
+                    width: "100%",
+                  },
+                },
+                /*#__PURE__*/ React.createElement(
+                  _LinearProgress["default"],
+                  null
+                )
+              )
+            ),
+          props.options.paginationPosition === "bottom" ||
+            props.options.paginationPosition === "both"
+            ? this.renderFooter()
+            : null,
+          (this.state.isLoading || props.isLoading) &&
+            props.options.loadingType === "overlay" &&
+            /*#__PURE__*/ React.createElement(
+              "div",
+              {
+                style: {
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  height: "100%",
+                  width: "100%",
+                  zIndex: 11,
+                },
+              },
+              /*#__PURE__*/ React.createElement(
+                props.components.OverlayLoading,
+                {
+                  theme: props.theme,
                 }
               )
             ),
-            (this.state.isLoading || props.isLoading) &&
-              props.options.loadingType === "linear" &&
-              /*#__PURE__*/ React.createElement(
-                "div",
-                {
-                  style: {
-                    position: "relative",
-                    width: "100%",
-                  },
+          this.state.errorState &&
+            this.state.errorState.errorCause === "query" &&
+            /*#__PURE__*/ React.createElement(
+              "div",
+              {
+                style: {
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  height: "100%",
+                  width: "100%",
+                  zIndex: 11,
                 },
-                /*#__PURE__*/ React.createElement(
-                  "div",
-                  {
-                    style: {
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      height: "100%",
-                      width: "100%",
-                    },
-                  },
-                  /*#__PURE__*/ React.createElement(
-                    _LinearProgress["default"],
-                    null
-                  )
-                )
-              ),
-            props.options.paginationPosition === "bottom" ||
-              props.options.paginationPosition === "both"
-              ? this.renderFooter()
-              : null,
-            (this.state.isLoading || props.isLoading) &&
-              props.options.loadingType === "overlay" &&
-              /*#__PURE__*/ React.createElement(
-                "div",
-                {
-                  style: {
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    height: "100%",
-                    width: "100%",
-                    zIndex: 11,
-                  },
-                },
-                /*#__PURE__*/ React.createElement(
-                  props.components.OverlayLoading,
-                  {
-                    theme: props.theme,
-                  }
-                )
-              ),
-            this.state.errorState &&
-              this.state.errorState.errorCause === "query" &&
-              /*#__PURE__*/ React.createElement(
-                "div",
-                {
-                  style: {
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    height: "100%",
-                    width: "100%",
-                    zIndex: 11,
-                  },
-                },
-                /*#__PURE__*/ React.createElement(
-                  props.components.OverlayError,
-                  {
-                    error: this.state.errorState,
-                    retry: this.retry,
-                    theme: props.theme,
-                    icon: props.icons.Retry,
-                  }
-                )
-              )
-          )
+              },
+              /*#__PURE__*/ React.createElement(props.components.OverlayError, {
+                error: this.state.errorState,
+                retry: this.retry,
+                theme: props.theme,
+                icon: props.icons.Retry,
+              })
+            )
         );
       },
     },

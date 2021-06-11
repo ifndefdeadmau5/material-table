@@ -6,7 +6,6 @@ import LinearProgress from "@material-ui/core/LinearProgress";
 import DoubleScrollbar from "react-double-scrollbar";
 import * as React from "react";
 import { MTablePagination, MTableSteppedPagination } from "./components";
-import { DragDropContext, Droppable } from "react-beautiful-dnd";
 import DataManager from "./utils/data-manager";
 import { debounce } from "debounce";
 import equal from "fast-deep-equal";
@@ -402,23 +401,6 @@ export default class MaterialTable extends React.Component {
           this.props.onChangeRowsPerPage(pageSize);
       });
     }
-  };
-
-  onDragEnd = (result) => {
-    if (!result || !result.source || !result.destination) return;
-    this.dataManager.changeByDrag(result);
-    this.setState(this.dataManager.getRenderState(), () => {
-      if (
-        this.props.onColumnDragged &&
-        result.destination.droppableId === "headers" &&
-        result.source.droppableId === "headers"
-      ) {
-        this.props.onColumnDragged(
-          result.source.index,
-          result.destination.index
-        );
-      }
-    });
   };
 
   onGroupExpandChanged = (path) => {
@@ -948,217 +930,205 @@ export default class MaterialTable extends React.Component {
   render() {
     const props = this.getProps();
 
+    const table = this.renderTable(props);
+
     return (
-      <DragDropContext
-        onDragEnd={this.onDragEnd}
-        nonce={props.options.cspNonce}
+      <props.components.Container
+        style={{ position: "relative", ...props.style }}
       >
-        <props.components.Container
-          style={{ position: "relative", ...props.style }}
-        >
-          {props.options.paginationPosition === "top" ||
-          props.options.paginationPosition === "both"
-            ? this.renderFooter()
-            : null}
-          {props.options.toolbar && (
-            <props.components.Toolbar
-              actions={props.actions}
-              components={props.components}
-              selectedRows={
-                this.state.selectedCount > 0
-                  ? this.state.originalData.filter((a) => {
-                      return a.tableData.checked;
-                    })
-                  : []
-              }
-              columns={this.state.columns}
-              columnsButton={props.options.columnsButton}
-              icons={props.icons}
-              exportAllData={props.options.exportAllData}
-              exportButton={props.options.exportButton}
-              exportDelimiter={props.options.exportDelimiter}
-              exportFileName={props.options.exportFileName}
-              exportCsv={props.options.exportCsv}
-              exportPdf={props.options.exportPdf}
-              getFieldValue={this.dataManager.getFieldValue}
-              data={this.state.data}
-              renderData={this.state.renderData}
-              search={props.options.search}
-              showTitle={props.options.showTitle}
-              showTextRowsSelected={props.options.showTextRowsSelected}
-              toolbarButtonAlignment={props.options.toolbarButtonAlignment}
-              searchFieldAlignment={props.options.searchFieldAlignment}
-              searchAutoFocus={props.options.searchAutoFocus}
-              searchFieldStyle={props.options.searchFieldStyle}
-              searchFieldVariant={props.options.searchFieldVariant}
-              title={props.title}
-              searchText={this.dataManager.searchText}
-              onSearchChanged={this.onSearchChangeDebounce}
-              dataManager={this.dataManager}
-              onColumnsChanged={this.onChangeColumnHidden}
-              localization={{
-                ...MaterialTable.defaultProps.localization.toolbar,
-                ...this.props.localization.toolbar,
+        {props.options.paginationPosition === "top" ||
+        props.options.paginationPosition === "both"
+          ? this.renderFooter()
+          : null}
+        {props.options.toolbar && (
+          <props.components.Toolbar
+            actions={props.actions}
+            components={props.components}
+            selectedRows={
+              this.state.selectedCount > 0
+                ? this.state.originalData.filter((a) => {
+                    return a.tableData.checked;
+                  })
+                : []
+            }
+            columns={this.state.columns}
+            columnsButton={props.options.columnsButton}
+            icons={props.icons}
+            exportAllData={props.options.exportAllData}
+            exportButton={props.options.exportButton}
+            exportDelimiter={props.options.exportDelimiter}
+            exportFileName={props.options.exportFileName}
+            exportCsv={props.options.exportCsv}
+            exportPdf={props.options.exportPdf}
+            getFieldValue={this.dataManager.getFieldValue}
+            data={this.state.data}
+            renderData={this.state.renderData}
+            search={props.options.search}
+            showTitle={props.options.showTitle}
+            showTextRowsSelected={props.options.showTextRowsSelected}
+            toolbarButtonAlignment={props.options.toolbarButtonAlignment}
+            searchFieldAlignment={props.options.searchFieldAlignment}
+            searchAutoFocus={props.options.searchAutoFocus}
+            searchFieldStyle={props.options.searchFieldStyle}
+            searchFieldVariant={props.options.searchFieldVariant}
+            title={props.title}
+            searchText={this.dataManager.searchText}
+            onSearchChanged={this.onSearchChangeDebounce}
+            dataManager={this.dataManager}
+            onColumnsChanged={this.onChangeColumnHidden}
+            localization={{
+              ...MaterialTable.defaultProps.localization.toolbar,
+              ...this.props.localization.toolbar,
+            }}
+          />
+        )}
+        {props.options.grouping && (
+          <props.components.Groupbar
+            icons={props.icons}
+            localization={{
+              ...MaterialTable.defaultProps.localization.grouping,
+              ...props.localization.grouping,
+            }}
+            groupColumns={this.state.columns
+              .filter((col) => col.tableData.groupOrder > -1)
+              .sort(
+                (col1, col2) =>
+                  col1.tableData.groupOrder - col2.tableData.groupOrder
+              )}
+            onSortChanged={this.onChangeGroupOrder}
+            onGroupRemoved={this.onGroupRemoved}
+          />
+        )}
+        <ScrollBar double={props.options.doubleHorizontalScroll}>
+          <div>
+            <div
+              ref={this.tableContainerDiv}
+              style={{
+                maxHeight: props.options.maxBodyHeight,
+                minHeight: props.options.minBodyHeight,
+                overflowY: props.options.overflowY,
               }}
-            />
-          )}
-          {props.options.grouping && (
-            <props.components.Groupbar
-              icons={props.icons}
-              localization={{
-                ...MaterialTable.defaultProps.localization.grouping,
-                ...props.localization.grouping,
-              }}
-              groupColumns={this.state.columns
-                .filter((col) => col.tableData.groupOrder > -1)
-                .sort(
-                  (col1, col2) =>
-                    col1.tableData.groupOrder - col2.tableData.groupOrder
-                )}
-              onSortChanged={this.onChangeGroupOrder}
-              onGroupRemoved={this.onGroupRemoved}
-            />
-          )}
-          <ScrollBar double={props.options.doubleHorizontalScroll}>
-            <Droppable droppableId="headers" direction="horizontal">
-              {(provided, snapshot) => {
-                const table = this.renderTable(props);
-                return (
-                  <div ref={provided.innerRef}>
-                    <div
-                      ref={this.tableContainerDiv}
-                      style={{
-                        maxHeight: props.options.maxBodyHeight,
-                        minHeight: props.options.minBodyHeight,
-                        overflowY: props.options.overflowY,
-                      }}
-                    >
-                      {this.state.width &&
-                      props.options.fixedColumns &&
-                      props.options.fixedColumns.right ? (
-                        <div
-                          style={{
-                            width: this.getColumnsWidth(
-                              props,
-                              -1 * props.options.fixedColumns.right
-                            ),
-                            position: "absolute",
-                            top: 0,
-                            right: 0,
-                            boxShadow: "-2px 0px 15px rgba(125,147,178,.25)",
-                            overflowX: "hidden",
-                            zIndex: 11,
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: this.state.width,
-                              background: "white",
-                              transform: `translateX(calc(${this.getColumnsWidth(
-                                props,
-                                -1 * props.options.fixedColumns.right
-                              )} - 100%))`,
-                            }}
-                          >
-                            {table}
-                          </div>
-                        </div>
-                      ) : null}
-
-                      <div>{table}</div>
-
-                      {this.state.width &&
-                      props.options.fixedColumns &&
-                      props.options.fixedColumns.left ? (
-                        <div
-                          style={{
-                            width: this.getColumnsWidth(
-                              props,
-                              props.options.fixedColumns.left
-                            ),
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            boxShadow: "2px 0px 15px rgba(125,147,178,.25)",
-                            overflowX: "hidden",
-                            zIndex: 11,
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: this.state.width,
-                              background: "white",
-                            }}
-                          >
-                            {table}
-                          </div>
-                        </div>
-                      ) : null}
-                    </div>
-                    {provided.placeholder}
-                  </div>
-                );
-              }}
-            </Droppable>
-          </ScrollBar>
-          {(this.state.isLoading || props.isLoading) &&
-            props.options.loadingType === "linear" && (
-              <div style={{ position: "relative", width: "100%" }}>
+            >
+              {this.state.width &&
+              props.options.fixedColumns &&
+              props.options.fixedColumns.right ? (
                 <div
                   style={{
+                    width: this.getColumnsWidth(
+                      props,
+                      -1 * props.options.fixedColumns.right
+                    ),
+                    position: "absolute",
+                    top: 0,
+                    right: 0,
+                    boxShadow: "-2px 0px 15px rgba(125,147,178,.25)",
+                    overflowX: "hidden",
+                    zIndex: 11,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: this.state.width,
+                      background: "white",
+                      transform: `translateX(calc(${this.getColumnsWidth(
+                        props,
+                        -1 * props.options.fixedColumns.right
+                      )} - 100%))`,
+                    }}
+                  >
+                    {table}
+                  </div>
+                </div>
+              ) : null}
+
+              <div>{table}</div>
+
+              {this.state.width &&
+              props.options.fixedColumns &&
+              props.options.fixedColumns.left ? (
+                <div
+                  style={{
+                    width: this.getColumnsWidth(
+                      props,
+                      props.options.fixedColumns.left
+                    ),
                     position: "absolute",
                     top: 0,
                     left: 0,
-                    height: "100%",
-                    width: "100%",
+                    boxShadow: "2px 0px 15px rgba(125,147,178,.25)",
+                    overflowX: "hidden",
+                    zIndex: 11,
                   }}
                 >
-                  <LinearProgress />
+                  <div
+                    style={{
+                      width: this.state.width,
+                      background: "white",
+                    }}
+                  >
+                    {table}
+                  </div>
                 </div>
+              ) : null}
+            </div>
+          </div>
+        </ScrollBar>
+        {(this.state.isLoading || props.isLoading) &&
+          props.options.loadingType === "linear" && (
+            <div style={{ position: "relative", width: "100%" }}>
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  height: "100%",
+                  width: "100%",
+                }}
+              >
+                <LinearProgress />
               </div>
-            )}
-          {props.options.paginationPosition === "bottom" ||
-          props.options.paginationPosition === "both"
-            ? this.renderFooter()
-            : null}
+            </div>
+          )}
+        {props.options.paginationPosition === "bottom" ||
+        props.options.paginationPosition === "both"
+          ? this.renderFooter()
+          : null}
 
-          {(this.state.isLoading || props.isLoading) &&
-            props.options.loadingType === "overlay" && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  height: "100%",
-                  width: "100%",
-                  zIndex: 11,
-                }}
-              >
-                <props.components.OverlayLoading theme={props.theme} />
-              </div>
-            )}
-          {this.state.errorState &&
-            this.state.errorState.errorCause === "query" && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  height: "100%",
-                  width: "100%",
-                  zIndex: 11,
-                }}
-              >
-                <props.components.OverlayError
-                  error={this.state.errorState}
-                  retry={this.retry}
-                  theme={props.theme}
-                  icon={props.icons.Retry}
-                />
-              </div>
-            )}
-        </props.components.Container>
-      </DragDropContext>
+        {(this.state.isLoading || props.isLoading) &&
+          props.options.loadingType === "overlay" && (
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                height: "100%",
+                width: "100%",
+                zIndex: 11,
+              }}
+            >
+              <props.components.OverlayLoading theme={props.theme} />
+            </div>
+          )}
+        {this.state.errorState && this.state.errorState.errorCause === "query" && (
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              height: "100%",
+              width: "100%",
+              zIndex: 11,
+            }}
+          >
+            <props.components.OverlayError
+              error={this.state.errorState}
+              retry={this.retry}
+              theme={props.theme}
+              icon={props.icons.Retry}
+            />
+          </div>
+        )}
+      </props.components.Container>
     );
   }
 }
